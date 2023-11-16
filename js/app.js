@@ -125,16 +125,68 @@ class Workout {
   }
 }
 
-const tracker = new CalorieTracker();
+class App {
+  constructor() {
+    this._tracker = new CalorieTracker();
 
-const breakfast = new Meal('Breakfast', 400);
-const lunch = new Meal('Lunch', 350);
-tracker.addMeal(breakfast);
-tracker.addMeal(lunch);
+    document
+      .getElementById('meal-form')
+      .addEventListener('submit', this._newMeal.bind(this));
+    // the bind() method is used to create a new function with a specified this value and, optionally, initial arguments. The bind() method is commonly used to set the context of a function, ensuring that it is called with a specific value for this when invoked.
 
-const run = new Workout('Morning Run', 320);
-tracker.addWorkout(run);
+    document
+      .getElementById('workout-form')
+      .addEventListener('submit', this._newWorkout.bind(this));
+  }
 
-console.log(tracker._meals);
-console.log(tracker._workouts);
-console.log(tracker._totalCalories);
+  _newMeal(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('meal-name');
+    const calories = document.getElementById('meal-calories');
+
+    // Validate inputs
+    if (name.value === '' || calories.value === '') {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    const meal = new Meal(name.value, +calories.value);
+    // the + operator can be used to convert strings to numbers. This process is known as type coercion, and the + operator can act as both an addition operator and a string-to-number conversion operator.
+
+    this._tracker.addMeal(meal);
+
+    name.value = '';
+    calories.value = '';
+
+    const collapseMeal = document.getElementById('collapse-meal');
+    const bsCollapse = new bootstrap.Collapse(collapseMeal, { toggle: true });
+  }
+
+  _newWorkout(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('workout-name');
+    const calories = document.getElementById('workout-calories');
+
+    // Validate inputs
+    if (name.value === '' || calories.value === '') {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    const workout = new Workout(name.value, +calories.value);
+
+    this._tracker.addWorkout(workout);
+
+    name.value = '';
+    calories.value = '';
+
+    const collapseWorkout = document.getElementById('collapse-workout');
+    const bsCollapse = new bootstrap.Collapse(collapseWorkout, {
+      toggle: true,
+    });
+  }
+}
+
+const app = new App();

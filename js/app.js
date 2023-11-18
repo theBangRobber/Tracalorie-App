@@ -50,6 +50,13 @@ class CalorieTracker {
     }
   }
 
+  reset() {
+    this._totalCalories = 0;
+    this._meals = [];
+    this._workouts = [];
+    this._render();
+  }
+
   // Private Methods //
 
   _displayCaloriesTotal() {
@@ -196,10 +203,10 @@ class App {
   constructor() {
     this._tracker = new CalorieTracker();
 
+    // the .bind() method is used to create a new function that, when called, has its this keyword set to a specific value. It allows you to explicitly specify the value of this when a function is invoked. The primary use case for .bind() is to create a new function with a fixed this value, which can be particularly useful in certain situations, such as event handlers or callbacks.
     document
       .getElementById('meal-form')
       .addEventListener('submit', this._newItem.bind(this, 'meal'));
-    // the bind() method is used to create a new function with a specified this value and, optionally, initial arguments. The bind() method is commonly used to set the context of a function, ensuring that it is called with a specific value for this when invoked.
 
     document
       .getElementById('workout-form')
@@ -212,6 +219,20 @@ class App {
     document
       .getElementById('workout-items')
       .addEventListener('click', this._removeItem.bind(this, 'workout'));
+
+    document
+      .getElementById('filter-meals')
+      .addEventListener('keyup', this._filterItems.bind(this, 'meal'));
+
+    document
+      .getElementById('filter-workouts')
+      .addEventListener('keyup', this._filterItems.bind(this, 'workout'));
+
+    document
+      .getElementById('reset')
+      .addEventListener('click', this._reset.bind(this));
+
+    // Keep in mind that the original function is not modified by .bind(). Instead, a new function is created with the specified this value.
   }
 
   _newItem(type, e) {
@@ -258,6 +279,28 @@ class App {
         e.target.closest('.card').remove();
       }
     }
+  }
+
+  _filterItems(type, e) {
+    const text = e.target.value.toLowerCase();
+    document.querySelectorAll(`#${type}-items .card`).forEach((item) => {
+      const name = item.firstElementChild.firstElementChild.textContent;
+
+      // indexOf() will return -1 if there is no match
+      if (name.toLocaleLowerCase().indexOf(text) !== -1) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  _reset() {
+    this._tracker.reset();
+    document.getElementById('meal-items').innerHTML = '';
+    document.getElementById('workout-items').innerHTML = '';
+    document.getElementById('filter-meals').value = '';
+    document.getElementById('filter-workouts').value = '';
   }
 }
 

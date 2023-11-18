@@ -57,6 +57,12 @@ class CalorieTracker {
     this._render();
   }
 
+  setLimit(calorieLimit) {
+    this._calorieLimit = calorieLimit;
+    this._displayCaloriesLimit();
+    this._render();
+  }
+
   // Private Methods //
 
   _displayCaloriesTotal() {
@@ -232,6 +238,10 @@ class App {
       .getElementById('reset')
       .addEventListener('click', this._reset.bind(this));
 
+    document
+      .getElementById('limit-form')
+      .addEventListener('submit', this._setLimit.bind(this));
+
     // Keep in mind that the original function is not modified by .bind(). Instead, a new function is created with the specified this value.
   }
 
@@ -301,6 +311,24 @@ class App {
     document.getElementById('workout-items').innerHTML = '';
     document.getElementById('filter-meals').value = '';
     document.getElementById('filter-workouts').value = '';
+  }
+
+  _setLimit(e) {
+    e.preventDefault();
+
+    const limit = document.getElementById('limit');
+
+    if (limit.value === '') {
+      alert('Please add a daily limit.');
+      return;
+    }
+
+    this._tracker.setLimit(+limit.value);
+    limit.value = '';
+
+    const modalEl = document.getElementById('limit-modal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide(); // this is for boostrap to hide the daily limit pop-up
   }
 }
 

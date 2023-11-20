@@ -1,8 +1,8 @@
 class CalorieTracker {
   constructor() {
     this._calorieLimit = Storage.getCalorieLimit();
-    this._totalCalories = 0;
-    this._meals = [];
+    this._totalCalories = Storage.getTotalCalories(0);
+    this._meals = Storage.getMeals();
     this._workouts = [];
 
     this._displayCaloriesLimit();
@@ -18,6 +18,8 @@ class CalorieTracker {
   addMeal(meal) {
     this._meals.push(meal);
     this._totalCalories += meal.calories;
+    Storage.updateCalories(this._totalCalories);
+    Storage.saveMeal(meal);
     this._displayNewMeal(meal);
     this._render();
   }
@@ -25,6 +27,7 @@ class CalorieTracker {
   addWorkout(workout) {
     this._workouts.push(workout);
     this._totalCalories -= workout.calories;
+    Storage.updateCalories(this._totalCalories);
     this._displayNewWorkout(workout);
     this._render();
   }
@@ -35,6 +38,7 @@ class CalorieTracker {
     if (index !== -1) {
       const meal = this._meals[index];
       this._totalCalories -= meal.calories;
+      Storage.updateCalories(this._totalCalories);
       this._meals.splice(index, 1); // only remove item with matching index
       this._render();
     }
@@ -45,6 +49,7 @@ class CalorieTracker {
     if (index !== -1) {
       const workout = this._workouts[index];
       this._totalCalories += workout.calories;
+      Storage.updateCalories(this._totalCalories);
       this._workouts.splice(index, 1); // only remove item with matching index
       this._render();
     }
@@ -62,6 +67,10 @@ class CalorieTracker {
     Storage.setCalorieLimit(calorieLimit);
     this._displayCaloriesLimit();
     this._render();
+  }
+
+  loadItems() {
+    this._meals.forEach((meal) => this._displayNewMeal(meal));
   }
 
   // Private Methods //
@@ -221,12 +230,48 @@ class Storage {
   static setCalorieLimit(calorieLimit) {
     localStorage.setItem('calorieLimit', calorieLimit);
   }
+
+  static getTotalCalories(defaultCalories = 0) {
+    let totalCalories;
+    if (localStorage.getItem('totalCalories') === null) {
+      totalCalories = defaultCalories;
+    } else {
+      totalCalories = +localStorage.getItem('totalCalories');
+    }
+    return totalCalories;
+  }
+
+  static updateCalories(calories) {
+    localStorage.setItem('totalCalories', calories);
+  }
+
+  static getMeals() {
+    let meals;
+    if (localStorage.getItem('meals') === null) {
+      meals = [];
+    } else {
+      meals = JSON.parse(localStorage.getItem('meals'));
+    }
+    return meals;
+  }
+
+  static saveMeal(meal) {
+    const meals = Storage.getMeals();
+    meals.push(meal);
+    localStorage.setItem('meals', JSON.stringify(meals));
+  }
 }
 
 class App {
   constructor() {
     this._tracker = new CalorieTracker();
 
+    this._tracker.loadItems();
+
+    this._loadEventListeners();
+  }
+
+  _loadEventListeners() {
     // the .bind() method is used to create a new function that, when called, has its this keyword set to a specific value. It allows you to explicitly specify the value of this when a function is invoked. The primary use case for .bind() is to create a new function with a fixed this value, which can be particularly useful in certain situations, such as event handlers or callbacks.
     document
       .getElementById('meal-form')
